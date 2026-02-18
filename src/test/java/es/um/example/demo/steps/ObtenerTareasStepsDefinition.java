@@ -69,11 +69,11 @@ public class ObtenerTareasStepsDefinition {
         assertFalse(body.equals("{}"));
     }
 
-    @Y("cada tarea contiene los campos: id, asunto, fecha, estado")
-    public void cada_tarea_contiene_los_campos_id_asunto_fecha_estado() throws Exception {
+    @Y("cada tarea contiene los campos: uuid, asunto, fecha, estado")
+    public void cada_tarea_contiene_los_campos_uuid_asunto_fecha_estado() throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.contains("\"id\""));
+        assertTrue(body.contains("\"uuid\""));
         assertTrue(body.contains("\"asunto\""));
         assertTrue(body.contains("\"fecha\""));
         assertTrue(body.contains("\"estado\""));

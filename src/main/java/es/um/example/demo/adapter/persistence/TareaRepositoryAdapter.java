@@ -30,15 +30,16 @@ public class TareaRepositoryAdapter implements TareaRepository {
     }
 
     private TareaEntity toEntity(Tarea domain) {
-        if (domain.getId() != null) {
+        if (domain.getUuid() != null) {
             TareaEntity entity = new TareaEntity();
-            entity.setId(domain.getId());
+            entity.setUuid(domain.getUuid());
             entity.setAsunto(domain.getAsunto());
             entity.setFecha(domain.getFecha());
             entity.setEstado(domain.getEstado());
             return entity;
         }
         return new TareaEntity(
+                domain.getUuid(),
                 domain.getAsunto(),
                 domain.getFecha(),
                 domain.getEstado()
@@ -47,7 +48,7 @@ public class TareaRepositoryAdapter implements TareaRepository {
 
     private Tarea toDomain(TareaEntity entity) {
         return new Tarea(
-                entity.getId(),
+                entity.getUuid(),
                 entity.getAsunto(),
                 entity.getFecha(),
                 entity.getEstado()

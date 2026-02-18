@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class Tarea {
 
-    private Long id;
+    private String uuid;
     private String asunto;
     private LocalDate fecha;
     private EstadoTarea estado;
@@ -12,19 +12,19 @@ public class Tarea {
     public Tarea() {
     }
 
-    public Tarea(Long id, String asunto, LocalDate fecha, EstadoTarea estado) {
-        this.id = id;
+    public Tarea(String uuid, String asunto, LocalDate fecha, EstadoTarea estado) {
+        this.uuid = uuid;
         this.asunto = asunto;
         this.fecha = fecha;
         this.estado = estado;
     }
 
-    public Long getId() {
-        return id;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getAsunto() {

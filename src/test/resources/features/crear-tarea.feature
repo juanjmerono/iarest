@@ -12,6 +12,7 @@ Característica: Crear nueva tarea
     Y la tarea contiene el asunto "Nueva tarea de prueba"
     Y la tarea tiene estado "pendiente"
     Y la tarea tiene fecha actual
+    Y la tarea tiene un uuid válido
 
   Escenario: Crear tarea sin autenticación
     Dado un usuario anónimo

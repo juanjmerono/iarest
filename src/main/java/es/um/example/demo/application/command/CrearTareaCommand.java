@@ -5,14 +5,17 @@ import es.um.example.demo.domain.model.EstadoTarea;
 import es.um.example.demo.domain.model.Tarea;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record CrearTareaCommand(
+        String uuid,
         String asunto,
         LocalDate fecha,
         EstadoTarea estado
 ) {
     public static CrearTareaCommand fromRequest(CrearTareaRequest request) {
         return new CrearTareaCommand(
+                UUID.randomUUID().toString(),
                 request.getAsunto(),
                 LocalDate.now(),
                 EstadoTarea.pendiente
@@ -20,6 +23,6 @@ public record CrearTareaCommand(
     }
 
     public Tarea toEntity() {
-        return new Tarea(null, asunto, fecha, estado);
+        return new Tarea(uuid, asunto, fecha, estado);
     }
 }
