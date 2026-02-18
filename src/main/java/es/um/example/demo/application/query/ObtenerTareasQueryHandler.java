@@ -18,7 +18,7 @@ public class ObtenerTareasQueryHandler {
     public ObtenerTareasQuery.ObtenerTareasQueryResult handle(ObtenerTareasQuery.ObtenerTareasQueryRequest request) {
         List<TodoResponse> tareas = tareaRepository.findAll().stream()
                 .map(tarea -> new TodoResponse(
-                        tarea.getId(),
+                        tarea.getUuid(),
                         tarea.getAsunto(),
                         tarea.getFecha(),
                         tarea.getEstado().name()))

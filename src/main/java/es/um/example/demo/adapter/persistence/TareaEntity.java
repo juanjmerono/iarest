@@ -9,8 +9,8 @@ import java.time.LocalDate;
 public class TareaEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "UUID", nullable = false)
+    private String uuid;
 
     @Column(name = "ASUNTO", nullable = false)
     private String asunto;
@@ -25,18 +25,19 @@ public class TareaEntity {
     public TareaEntity() {
     }
 
-    public TareaEntity(String asunto, LocalDate fecha, EstadoTarea estado) {
+    public TareaEntity(String uuid, String asunto, LocalDate fecha, EstadoTarea estado) {
+        this.uuid = uuid;
         this.asunto = asunto;
         this.fecha = fecha;
         this.estado = estado;
     }
 
-    public Long getId() {
-        return id;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getAsunto() {

@@ -20,7 +20,7 @@ public class CrearTareaCommandHandler {
         Tarea tarea = command.toEntity();
         Tarea savedTarea = tareaRepository.save(tarea);
         return new CrearTareaCommandResult(
-                savedTarea.getId(),
+                savedTarea.getUuid(),
                 savedTarea.getAsunto(),
                 savedTarea.getFecha(),
                 savedTarea.getEstado().name()
@@ -28,13 +28,13 @@ public class CrearTareaCommandHandler {
     }
 
     public record CrearTareaCommandResult(
-            Long id,
+            String uuid,
             String asunto,
             java.time.LocalDate fecha,
             String estado
     ) {
         public TodoResponse toTodoResponse() {
-            return new TodoResponse(id, asunto, fecha, estado);
+            return new TodoResponse(uuid, asunto, fecha, estado);
         }
     }
 }

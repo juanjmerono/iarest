@@ -64,6 +64,14 @@ public class CrearTareaStepsDefinition {
         assertTrue(body.contains("\"fecha\""));
     }
 
+    @Y("la tarea tiene un uuid válido")
+    public void la_tarea_tiene_un_uuid_válido() throws Exception {
+        String body = stepHelper.getResponseBody();
+        assertNotNull(body);
+        assertTrue(body.contains("\"uuid\""));
+        assertTrue(body.matches(".*\"uuid\"\\s*:\\s*\"[0-9a-f-]{36}\".*"));
+    }
+
     @Entonces("obtiene una respuesta de error de validación")
     public void obtiene_una_respuesta_de_error_de_validación() {
         assertEquals(HttpStatus.BAD_REQUEST.value(), stepHelper.getStatusCode()); 

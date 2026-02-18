@@ -23,4 +23,4 @@ Característica: Obtener lista de tareas
     Cuando consulta la lista de tareas
     Entonces obtiene una respuesta correcta
     Y una lista de tareas no vacía
-    Y cada tarea contiene los campos: id, asunto, fecha, estado
+    Y cada tarea contiene los campos: uuid, asunto, fecha, estado
