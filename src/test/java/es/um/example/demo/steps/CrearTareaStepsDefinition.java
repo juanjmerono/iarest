@@ -72,6 +72,15 @@ public class CrearTareaStepsDefinition {
         assertTrue(body.matches(".*\"uuid\"\\s*:\\s*\"[0-9a-f-]{36}\".*"));
     }
 
+    @Y("la tarea tiene el usuarioId del usuario autenticado")
+    public void la_tarea_tiene_el_usuarioId_del_usuario_autenticado() throws Exception {
+        String body = stepHelper.getResponseBody();
+        String expectedUser = stepHelper.getCurrentUser();
+        assertNotNull(body);
+        assertNotNull(expectedUser);
+        assertTrue(body.contains("\"usuarioId\":\"" + expectedUser + "\""));
+    }
+
     @Entonces("obtiene una respuesta de error de validación")
     public void obtiene_una_respuesta_de_error_de_validación() {
         assertEquals(HttpStatus.BAD_REQUEST.value(), stepHelper.getStatusCode()); 

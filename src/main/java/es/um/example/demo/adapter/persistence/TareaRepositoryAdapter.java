@@ -22,6 +22,12 @@ public class TareaRepositoryAdapter implements TareaRepository {
                 .toList();
     }
 
+    public List<Tarea> findByUsuarioId(String usuarioId) {
+        return jpaRepository.findByUsuarioId(usuarioId).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     @Override
     public Tarea save(Tarea tarea) {
         TareaEntity entity = toEntity(tarea);
@@ -36,13 +42,15 @@ public class TareaRepositoryAdapter implements TareaRepository {
             entity.setAsunto(domain.getAsunto());
             entity.setFecha(domain.getFecha());
             entity.setEstado(domain.getEstado());
+            entity.setUsuarioId(domain.getUsuarioId());
             return entity;
         }
         return new TareaEntity(
                 domain.getUuid(),
                 domain.getAsunto(),
                 domain.getFecha(),
-                domain.getEstado()
+                domain.getEstado(),
+                domain.getUsuarioId()
         );
     }
 
@@ -51,7 +59,8 @@ public class TareaRepositoryAdapter implements TareaRepository {
                 entity.getUuid(),
                 entity.getAsunto(),
                 entity.getFecha(),
-                entity.getEstado()
+                entity.getEstado(),
+                entity.getUsuarioId()
         );
     }
 }

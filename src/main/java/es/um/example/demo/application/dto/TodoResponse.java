@@ -19,14 +19,18 @@ public class TodoResponse {
             allowableValues = {"pendiente", "en_progreso", "completada"})
     private String estado;
 
+    @Schema(description = "Identificador del usuario propietario de la tarea", example = "pepe")
+    private String usuarioId;
+
     public TodoResponse() {
     }
 
-    public TodoResponse(String uuid, String asunto, LocalDate fecha, String estado) {
+    public TodoResponse(String uuid, String asunto, LocalDate fecha, String estado, String usuarioId) {
         this.uuid = uuid;
         this.asunto = asunto;
         this.fecha = fecha;
         this.estado = estado;
+        this.usuarioId = usuarioId;
     }
 
     public String getUuid() {
@@ -59,5 +63,13 @@ public class TodoResponse {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public String getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(String usuarioId) {
+        this.usuarioId = usuarioId;
     }
 }

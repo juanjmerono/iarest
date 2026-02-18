@@ -19,8 +19,15 @@ Característica: Obtener lista de tareas
     Entonces obtiene una respuesta no autorizada
 
   Escenario: Obtener la lista de tareas autenticado
-    Dado un usuario autenticado "pepe" con permiso "read"
+    Dado un usuario autenticado "user2" con permiso "read"
     Cuando consulta la lista de tareas
     Entonces obtiene una respuesta correcta
     Y una lista de tareas no vacía
-    Y cada tarea contiene los campos: uuid, asunto, fecha, estado
+    Y cada tarea contiene los campos: uuid, asunto, fecha, estado, usuarioId
+
+  Escenario: Usuario no ve tareas de otros usuarios
+    Dado un usuario autenticado "user1" con permiso "read"
+    Y el sistema tiene tareas de otros usuarios
+    Cuando consulta la lista de tareas
+    Entonces obtiene una respuesta correcta
+    Y la lista no contiene tareas de otros usuarios

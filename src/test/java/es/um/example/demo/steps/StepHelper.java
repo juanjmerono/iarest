@@ -13,30 +13,35 @@ public class StepHelper {
 
     private MvcResult mvcResult;
     private RequestPostProcessor jwt;
+    private String currentUser;
 
     private RequestPostProcessor getJWT(String user, String scope) {
-        if (user == null || user.isEmpty()) return annonPostProcessor();
+        if (user == null || user.isEmpty()) return anonPostProcessor();
         return jwt()
                 .jwt(u -> u.subject(user))
                 .authorities(new SimpleGrantedAuthority(scope));
     }
 
-    private RequestPostProcessor annonPostProcessor() {
+    private RequestPostProcessor anonPostProcessor() {
         return new RequestPostProcessor(){
                 @Override
                 public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                    // Nothing to to
                     return request;
                 }  
         };  
     }
 
     protected void enableUserToken(String user, String scope) {
+        this.currentUser = user;
         this.jwt = getJWT(user,scope);
     }
 
     protected RequestPostProcessor getUserToken() {
         return this.jwt;
+    }
+
+    protected String getCurrentUser() {
+        return this.currentUser;
     }
 
     protected ResultHandler readResponse = result -> this.mvcResult = result;

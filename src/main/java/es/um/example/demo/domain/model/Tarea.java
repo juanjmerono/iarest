@@ -8,15 +8,17 @@ public class Tarea {
     private String asunto;
     private LocalDate fecha;
     private EstadoTarea estado;
+    private String usuarioId;
 
     public Tarea() {
     }
 
-    public Tarea(String uuid, String asunto, LocalDate fecha, EstadoTarea estado) {
+    public Tarea(String uuid, String asunto, LocalDate fecha, EstadoTarea estado, String usuarioId) {
         this.uuid = uuid;
         this.asunto = asunto;
         this.fecha = fecha;
         this.estado = estado;
+        this.usuarioId = usuarioId;
     }
 
     public String getUuid() {
@@ -49,5 +51,13 @@ public class Tarea {
 
     public void setEstado(EstadoTarea estado) {
         this.estado = estado;
+    }
+
+    public String getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(String usuarioId) {
+        this.usuarioId = usuarioId;
     }
 }

@@ -11,18 +11,20 @@ public record CrearTareaCommand(
         String uuid,
         String asunto,
         LocalDate fecha,
-        EstadoTarea estado
+        EstadoTarea estado,
+        String usuarioId
 ) {
-    public static CrearTareaCommand fromRequest(CrearTareaRequest request) {
+    public static CrearTareaCommand fromRequest(CrearTareaRequest request, String usuarioId) {
         return new CrearTareaCommand(
                 UUID.randomUUID().toString(),
                 request.getAsunto(),
                 LocalDate.now(),
-                EstadoTarea.pendiente
+                EstadoTarea.pendiente,
+                usuarioId
         );
     }
 
     public Tarea toEntity() {
-        return new Tarea(uuid, asunto, fecha, estado);
+        return new Tarea(uuid, asunto, fecha, estado, usuarioId);
     }
 }

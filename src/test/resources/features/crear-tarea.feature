@@ -13,6 +13,7 @@ Característica: Crear nueva tarea
     Y la tarea tiene estado "pendiente"
     Y la tarea tiene fecha actual
     Y la tarea tiene un uuid válido
+    Y la tarea tiene el usuarioId del usuario autenticado
 
   Escenario: Crear tarea sin autenticación
     Dado un usuario anónimo

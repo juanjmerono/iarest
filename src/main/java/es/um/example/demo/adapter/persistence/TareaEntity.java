@@ -22,14 +22,18 @@ public class TareaEntity {
     @Column(name = "ESTADO", nullable = false)
     private EstadoTarea estado;
 
+    @Column(name = "USUARIO_ID", nullable = false)
+    private String usuarioId;
+
     public TareaEntity() {
     }
 
-    public TareaEntity(String uuid, String asunto, LocalDate fecha, EstadoTarea estado) {
+    public TareaEntity(String uuid, String asunto, LocalDate fecha, EstadoTarea estado, String usuarioId) {
         this.uuid = uuid;
         this.asunto = asunto;
         this.fecha = fecha;
         this.estado = estado;
+        this.usuarioId = usuarioId;
     }
 
     public String getUuid() {
@@ -62,5 +66,13 @@ public class TareaEntity {
 
     public void setEstado(EstadoTarea estado) {
         this.estado = estado;
+    }
+
+    public String getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(String usuarioId) {
+        this.usuarioId = usuarioId;
     }
 }

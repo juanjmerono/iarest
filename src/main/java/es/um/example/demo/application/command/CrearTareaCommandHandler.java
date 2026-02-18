@@ -15,15 +15,16 @@ public class CrearTareaCommandHandler {
         this.tareaRepository = tareaRepository;
     }
 
-    public CrearTareaCommandResult handle(CrearTareaRequest request) {
-        CrearTareaCommand command = CrearTareaCommand.fromRequest(request);
+    public CrearTareaCommandResult handle(CrearTareaRequest request, String usuarioId) {
+        CrearTareaCommand command = CrearTareaCommand.fromRequest(request, usuarioId);
         Tarea tarea = command.toEntity();
         Tarea savedTarea = tareaRepository.save(tarea);
         return new CrearTareaCommandResult(
                 savedTarea.getUuid(),
                 savedTarea.getAsunto(),
                 savedTarea.getFecha(),
-                savedTarea.getEstado().name()
+                savedTarea.getEstado().name(),
+                savedTarea.getUsuarioId()
         );
     }
 
@@ -31,10 +32,11 @@ public class CrearTareaCommandHandler {
             String uuid,
             String asunto,
             java.time.LocalDate fecha,
-            String estado
+            String estado,
+            String usuarioId
     ) {
         public TodoResponse toTodoResponse() {
-            return new TodoResponse(uuid, asunto, fecha, estado);
+            return new TodoResponse(uuid, asunto, fecha, estado, usuarioId);
         }
     }
 }

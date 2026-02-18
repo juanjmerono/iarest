@@ -50,10 +50,11 @@ public class TodoController {
             schema = @Schema(implementation = TodoResponse.class))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @GetMapping
+    @GetMapping(produces = "application/hal+json")
     @PreAuthorize("hasPermission('Tareas','read')")
     public CollectionModel<EntityModel<TodoResponse>> obtenerTareas(@AuthenticationPrincipal Jwt jwt) {
-        return assembler.toDecoratedCollectionModel(queryHandler.handle(new ObtenerTareasQuery.ObtenerTareasQueryRequest()));
+        String usuarioId = jwt.getSubject();
+        return assembler.toDecoratedCollectionModel(queryHandler.handle(new ObtenerTareasQuery.ObtenerTareasQueryRequest(), usuarioId));
     }
 
     @Operation(summary = "Crear una nueva tarea", description = "Crea una nueva tarea en la lista. La fecha se establece automáticamente a la fecha actual y el estado inicial es PENDIENTE.")
@@ -65,12 +66,13 @@ public class TodoController {
         @ApiResponse(responseCode = "401", description = "No autenticado"),
         @ApiResponse(responseCode = "403", description = "No autorizado - requiere scope write")
     })
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/hal+json")
     @PreAuthorize("hasPermission('Tareas','write')")
     public ResponseEntity<EntityModel<TodoResponse>> crearTarea(
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CrearTareaRequest request) {
-        var result = commandHandler.handle(request);
+        String usuarioId = jwt.getSubject();
+        var result = commandHandler.handle(request, usuarioId);
         TodoResponse response = result.toTodoResponse();
         EntityModel<TodoResponse> entityModel = assembler.toModel(response);
         return ResponseEntity.status(HttpStatus.CREATED).body(entityModel);

@@ -5,5 +5,6 @@ import java.util.List;
 
 public interface TareaRepository {
     List<Tarea> findAll();
+    List<Tarea> findByUsuarioId(String usuarioId);
     Tarea save(Tarea tarea);
 }
