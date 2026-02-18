@@ -14,6 +14,7 @@ public class DemoApplication {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     	http
+			.csrf(csrf -> csrf.disable()) // Allow posts without CSRF token
         	.authorizeHttpRequests(auth -> auth
             	.requestMatchers("/api-docs/**",
                 	"/swagger-ui.html",

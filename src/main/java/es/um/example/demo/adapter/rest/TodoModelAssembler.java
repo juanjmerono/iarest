@@ -19,6 +19,7 @@ public class TodoModelAssembler implements RepresentationModelAssembler<TodoResp
     public CollectionModel<EntityModel<TodoResponse>> toDecoratedCollectionModel(ObtenerTareasQueryResult result) {
         CollectionModel<EntityModel<TodoResponse>> collectionModel = toCollectionModel(result.tareas());
         collectionModel.add(linkTo(methodOn(TodoController.class).obtenerTareas(null)).withSelfRel());
+        collectionModel.add(linkTo(methodOn(TodoController.class).crearTarea(null, null)).withRel("create"));
         return collectionModel;
     }
 
@@ -26,7 +27,8 @@ public class TodoModelAssembler implements RepresentationModelAssembler<TodoResp
     @Override
     public EntityModel<TodoResponse> toModel(TodoResponse tarea) {
         return EntityModel.of(tarea,
-            linkTo(methodOn(TodoController.class).obtenerTareas(null)).withRel("todos"));
+            linkTo(methodOn(TodoController.class).obtenerTareas(null)).withRel("todos"),
+            linkTo(methodOn(TodoController.class).crearTarea(null, null)).withSelfRel());
     }
 
     @Override

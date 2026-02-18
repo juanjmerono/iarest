@@ -1,5 +1,7 @@
 package es.um.example.demo.adapter.rest;
 
+import es.um.example.demo.application.command.CrearTareaCommandHandler;
+import es.um.example.demo.application.dto.CrearTareaRequest;
 import es.um.example.demo.application.dto.TodoResponse;
 import es.um.example.demo.application.query.ObtenerTareasQuery;
 import es.um.example.demo.application.query.ObtenerTareasQueryHandler;
@@ -10,12 +12,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import jakarta.validation.Valid;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,10 +32,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class TodoController {
 
     private final ObtenerTareasQueryHandler queryHandler;
+    private final CrearTareaCommandHandler commandHandler;
     private final TodoModelAssembler assembler;
 
-    public TodoController(ObtenerTareasQueryHandler queryHandler, TodoModelAssembler assembler) {
+    public TodoController(ObtenerTareasQueryHandler queryHandler, 
+                          CrearTareaCommandHandler commandHandler,
+                          TodoModelAssembler assembler) {
         this.queryHandler = queryHandler;
+        this.commandHandler = commandHandler;
         this.assembler = assembler;
     }
 
@@ -43,5 +54,25 @@ public class TodoController {
     @PreAuthorize("hasPermission('Tareas','read')")
     public CollectionModel<EntityModel<TodoResponse>> obtenerTareas(@AuthenticationPrincipal Jwt jwt) {
         return assembler.toDecoratedCollectionModel(queryHandler.handle(new ObtenerTareasQuery.ObtenerTareasQueryRequest()));
+    }
+
+    @Operation(summary = "Crear una nueva tarea", description = "Crea una nueva tarea en la lista. La fecha se establece automáticamente a la fecha actual y el estado inicial es PENDIENTE.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Tarea creada correctamente",
+            content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = TodoResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+        @ApiResponse(responseCode = "401", description = "No autenticado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado - requiere scope write")
+    })
+    @PostMapping
+    @PreAuthorize("hasPermission('Tareas','write')")
+    public ResponseEntity<EntityModel<TodoResponse>> crearTarea(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody CrearTareaRequest request) {
+        var result = commandHandler.handle(request);
+        TodoResponse response = result.toTodoResponse();
+        EntityModel<TodoResponse> entityModel = assembler.toModel(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(entityModel);
     }
 }

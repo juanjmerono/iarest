@@ -25,6 +25,12 @@ public class TareaEntity {
     public TareaEntity() {
     }
 
+    public TareaEntity(String asunto, LocalDate fecha, EstadoTarea estado) {
+        this.asunto = asunto;
+        this.fecha = fecha;
+        this.estado = estado;
+    }
+
     public Long getId() {
         return id;
     }

@@ -18,12 +18,14 @@ import io.cucumber.java.es.Y;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class OpenAPIStepsDefinition extends GenericStepsDefinition {
+public class OpenAPIStepsDefinition {
  
     static final String API_DOCS_PATH = "/api-docs";
 
     @Autowired
     MockMvc mockMvc;
+    @Autowired
+    StepHelper stepHelper;
 
     @Dado("que el sistema tiene documentación openapi disponible")
     public void que_el_sistema_tiene_documentación_openapi_disponible() throws Exception {
@@ -38,12 +40,12 @@ public class OpenAPIStepsDefinition extends GenericStepsDefinition {
     public void el_cliente_accede_a_la_documentación_open_api() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get(API_DOCS_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
-               .andDo(readResponse);
+               .andDo(stepHelper.readResponse);
     }
 
     @Entonces("consulta la documentación openapi")
     public void consulta_la_documentación_openapi() throws Exception {
-        String body = getResponseBody();
+        String body = stepHelper.getResponseBody();
         assertNotNull(body);
         assertTrue(body.contains("\"openapi\""));
         assertTrue(body.contains("\"info\""));
@@ -52,7 +54,7 @@ public class OpenAPIStepsDefinition extends GenericStepsDefinition {
 
     @Y("se describe el endpoint {string}")
     public void se_describe_el_endpoint(String endpoint) throws Exception {
-        String body = getResponseBody();
+        String body = stepHelper.getResponseBody();
         assertNotNull(body);
         assertTrue(body.contains("\"" + endpoint + "\""));
     }

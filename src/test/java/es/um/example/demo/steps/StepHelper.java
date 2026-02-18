@@ -2,16 +2,17 @@ package es.um.example.demo.steps;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultHandler;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
-public class GenericStepsDefinition {
-    
+@Component
+public class StepHelper {
+
     private MvcResult mvcResult;
     private RequestPostProcessor jwt;
-
 
     private RequestPostProcessor getJWT(String user, String scope) {
         if (user == null || user.isEmpty()) return annonPostProcessor();
@@ -51,5 +52,5 @@ public class GenericStepsDefinition {
     protected int getStatusCode() {
         return this.mvcResult.getResponse().getStatus();
     }
-
+    
 }
