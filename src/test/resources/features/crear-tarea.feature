@@ -1,5 +1,6 @@
 # language: es
 
+@Crear
 Característica: Crear nueva tarea
   Como cliente de la API
   Quiero crear nuevas tareas en la lista

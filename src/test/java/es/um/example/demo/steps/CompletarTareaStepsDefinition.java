@@ -4,15 +4,22 @@ import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
 import io.cucumber.java.es.Y;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+
+import es.um.example.demo.application.dto.TodoResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,45 +35,46 @@ public class CompletarTareaStepsDefinition {
     @Autowired
     StepHelper stepHelper;
 
-    private String createdTaskUuid;
+    @Autowired
+    JsonMapper jsonMapper;
 
     @Dado("una tarea existente con asunto {string}")
     public void una_tarea_existente_con_asunto(String asunto) throws Exception {
         String jsonBody = String.format("{\"asunto\":\"%s\"}", asunto);
-        var result = mockMvc.perform(MockMvcRequestBuilders.post(API_TODOS_PATH)
+        mockMvc.perform(MockMvcRequestBuilders.post(API_TODOS_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .with(stepHelper.getUserToken())
                         .content(jsonBody))
                .andDo(stepHelper.readResponse)
+               .andDo(MockMvcResultHandlers.print())
                .andReturn();
         
-        int status = result.getResponse().getStatus();
+        int status = stepHelper.getStatusCode();
         if (status == 201 || status == 200) {
-            String responseBody = result.getResponse().getContentAsString();
-            int start = responseBody.indexOf("\"uuid\":\"") + 8;
-            int end = responseBody.indexOf("\"", start);
-            if (start > 7 && end > start) {
-                createdTaskUuid = responseBody.substring(start, end);
-            }
+            EntityModel<TodoResponse> em = 
+                jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+            stepHelper.createdTaskUUid(em.getContent().getUuid());
         }
     }
 
     @Dado("una tarea existente completada con asunto {string}")
     public void una_tarea_existente_completada_con_asunto(String asunto) throws Exception {
         String jsonBody = String.format("{\"asunto\":\"%s\"}", asunto);
-        var result = mockMvc.perform(MockMvcRequestBuilders.post(API_TODOS_PATH)
+        mockMvc.perform(MockMvcRequestBuilders.post(API_TODOS_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .with(stepHelper.getUserToken())
                         .content(jsonBody))
                .andDo(stepHelper.readResponse)
                .andReturn();
         
-        String responseBody = result.getResponse().getContentAsString();
-        int start = responseBody.indexOf("\"uuid\":\"") + 8;
-        int end = responseBody.indexOf("\"", start);
-        createdTaskUuid = responseBody.substring(start, end);
+        int status = stepHelper.getStatusCode();
+        if (status == 201 || status == 200) {
+            EntityModel<TodoResponse> em = 
+                jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+            stepHelper.createdTaskUUid(em.getContent().getUuid());
+        }
 
-        mockMvc.perform(MockMvcRequestBuilders.patch(API_TODOS_PATH + "/" + createdTaskUuid + "/completar")
+        mockMvc.perform(MockMvcRequestBuilders.patch(API_TODOS_PATH + "/" + stepHelper.getCreatedTaskUuid() + "/completar")
                         .with(stepHelper.getUserToken()))
                .andDo(stepHelper.readResponse);
     }
@@ -77,32 +85,33 @@ public class CompletarTareaStepsDefinition {
         stepHelper.enableUserToken(usuario, "write");
         
         String jsonBody = String.format("{\"asunto\":\"%s\"}", asunto);
-        var result = mockMvc.perform(MockMvcRequestBuilders.post(API_TODOS_PATH)
+        mockMvc.perform(MockMvcRequestBuilders.post(API_TODOS_PATH)
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .with(stepHelper.getUserToken())
                         .content(jsonBody))
                .andDo(stepHelper.readResponse)
                .andReturn();
         
-        String responseBody = result.getResponse().getContentAsString();
-        int start = responseBody.indexOf("\"uuid\":\"") + 8;
-        int end = responseBody.indexOf("\"", start);
-        createdTaskUuid = responseBody.substring(start, end);
+        int status = stepHelper.getStatusCode();
+        if (status == 201 || status == 200) {
+            EntityModel<TodoResponse> em = 
+                jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+            stepHelper.createdTaskUUid(em.getContent().getUuid());
+        }
 
         stepHelper.enableUserToken(originalUser, "write");
     }
 
     @Cuando("completa la tarea")
     public void completa_la_tarea() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.patch(API_TODOS_PATH + "/" + createdTaskUuid + "/completar")
+        mockMvc.perform(MockMvcRequestBuilders.patch(API_TODOS_PATH + "/" + stepHelper.getCreatedTaskUuid() + "/completar")
                         .with(stepHelper.getUserToken()))
                .andDo(stepHelper.readResponse);
     }
 
-    @Cuando("completa la tarea con uuid {string}")
-    public void completa_la_tarea_con_uuid(String uuid) throws Exception {
-        createdTaskUuid = uuid;
-        mockMvc.perform(MockMvcRequestBuilders.patch(API_TODOS_PATH + "/" + uuid + "/completar")
+    @Cuando("completa la tarea con uuid inexistente")
+    public void completa_la_tarea_con_uuid() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.patch(API_TODOS_PATH + "/inexistente/completar")
                         .with(stepHelper.getUserToken()))
                .andDo(stepHelper.readResponse);
     }

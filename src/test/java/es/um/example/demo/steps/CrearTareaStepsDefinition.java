@@ -3,15 +3,21 @@ package es.um.example.demo.steps;
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Entonces;
 import io.cucumber.java.es.Y;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+
+import es.um.example.demo.application.dto.TodoResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,6 +33,9 @@ public class CrearTareaStepsDefinition {
     @Autowired
     StepHelper stepHelper;
 
+    @Autowired
+    JsonMapper jsonMapper;
+
     @Cuando("crea una tarea con asunto {string}")
     public void crea_una_tarea_con_asunto(String asunto) throws Exception {
         String jsonBody = String.format("{\"asunto\":\"%s\"}", asunto);
@@ -34,7 +43,17 @@ public class CrearTareaStepsDefinition {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .with(stepHelper.getUserToken())
                         .content(jsonBody))
-               .andDo(stepHelper.readResponse);
+               .andDo(stepHelper.readResponse)
+               .andDo(MockMvcResultHandlers.print())
+               .andReturn();
+
+        int status = stepHelper.getStatusCode();
+        if (status == 201 || status == 200) {
+            EntityModel<TodoResponse> em = 
+                jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+            stepHelper.createdTaskUUid(em.getContent().getUuid());
+        }
+        
     }
 
     @Entonces("obtiene una respuesta de creación exitosa")

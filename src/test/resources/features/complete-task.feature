@@ -1,5 +1,6 @@
 # language: es
 
+@Completar
 Característica: Completar tarea
   Como cliente de la API
   Quiero completar tareas existentes
@@ -27,7 +28,7 @@ Característica: Completar tarea
 
   Escenario: Completar tarea que no existe
     Dado un usuario autenticado "pepe" con permiso "write"
-    Cuando completa la tarea con uuid "inexistente"
+    Cuando completa la tarea con uuid inexistente
     Entonces obtiene una respuesta de tarea no encontrada
 
   Escenario: Completar tarea de otro usuario

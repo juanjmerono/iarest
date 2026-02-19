@@ -1,5 +1,6 @@
 # language: es
 
+@Obtener
 Característica: Obtener lista de tareas
   Como cliente de la API
   Quiero obtener la lista de tareas

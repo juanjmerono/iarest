@@ -1,5 +1,6 @@
 # language: es
 
+@OpenAPI
 Característica: Obtener documentación openapi
   Como cliente de la API
   Quiero obtener la documentación openapi

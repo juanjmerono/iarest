@@ -14,6 +14,7 @@ public class StepHelper {
     private MvcResult mvcResult;
     private RequestPostProcessor jwt;
     private String currentUser;
+    private String createdTaskUuid;
 
     private RequestPostProcessor getJWT(String user, String scope) {
         if (user == null || user.isEmpty()) return anonPostProcessor();
@@ -57,5 +58,12 @@ public class StepHelper {
     protected int getStatusCode() {
         return this.mvcResult.getResponse().getStatus();
     }
+
+    protected void createdTaskUUid(String uuid) {
+        this.createdTaskUuid = uuid;
+    }
     
+    protected String getCreatedTaskUuid() {
+        return this.createdTaskUuid;
+    }
 }
