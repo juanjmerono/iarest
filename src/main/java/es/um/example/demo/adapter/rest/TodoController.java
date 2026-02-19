@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/example/demo/todos")
+@RequestMapping({"/example/demo","${springdoc.server.path}"})
 @Tag(name = "Tareas", description = "API para gestión de tareas")
 public class TodoController {
 
@@ -46,11 +47,11 @@ public class TodoController {
     @Operation(summary = "Obtener todas las tareas", description = "Retorna la lista de todas las tareas con su información básica")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de tareas obtenida correctamente",
-            content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = TodoResponse.class))),
+            content = @Content(mediaType = "application/hal+json")),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @GetMapping(produces = "application/hal+json")
+    @SecurityRequirement(name = "oidc", scopes = {"Tareas:read"})
+    @GetMapping(path = "/todos", produces = "application/hal+json")
     @PreAuthorize("hasPermission('Tareas','read')")
     public CollectionModel<EntityModel<TodoResponse>> obtenerTareas(@AuthenticationPrincipal Jwt jwt) {
         String usuarioId = jwt.getSubject();
@@ -60,13 +61,14 @@ public class TodoController {
     @Operation(summary = "Crear una nueva tarea", description = "Crea una nueva tarea en la lista. La fecha se establece automáticamente a la fecha actual y el estado inicial es PENDIENTE.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Tarea creada correctamente",
-            content = @Content(mediaType = "application/json",
+            content = @Content(mediaType = "application/hal+json",
             schema = @Schema(implementation = TodoResponse.class))),
         @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
         @ApiResponse(responseCode = "401", description = "No autenticado"),
         @ApiResponse(responseCode = "403", description = "No autorizado - requiere scope write")
     })
-    @PostMapping(consumes = "application/json", produces = "application/hal+json")
+    @SecurityRequirement(name = "oidc", scopes = {"Tareas:write"})
+    @PostMapping(path = "/todos", consumes = "application/json", produces = "application/hal+json")
     @PreAuthorize("hasPermission('Tareas','write')")
     public ResponseEntity<EntityModel<TodoResponse>> crearTarea(
             @AuthenticationPrincipal Jwt jwt,

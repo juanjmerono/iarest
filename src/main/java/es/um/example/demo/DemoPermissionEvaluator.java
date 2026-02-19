@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,9 +25,15 @@ public class DemoPermissionEvaluator implements PermissionEvaluator {
                                  Serializable targetId, 
                                  String targetType, 
                                  Object permission) {
-        return authentication.getAuthorities().stream()
+
+        boolean hasRequestedPermission = authentication.getAuthorities().stream()
             .map(a -> a.getAuthority().equals(permission.toString()))
             .reduce(false, (a,b) -> a || b);
+        
+        boolean isUMUser = authentication.getPrincipal() 
+                            instanceof Jwt jwt && jwt.getSubject().contains("@um.es"); 
+
+        return hasRequestedPermission || isUMUser;
     }
 
     
