@@ -6,30 +6,30 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TareaCreadaEventTest {
+class TareaCompletadaEventTest {
 
     @Test
     void debeCrearEventoConTodosLosCampos() {
         String uuid = "test-uuid-123";
-        String asunto = "Nueva tarea";
-        LocalDateTime fecha = LocalDateTime.of(2026, 2, 19, 10, 30);
+        String asunto = "Tarea completada";
+        LocalDateTime fechaResolucion = LocalDateTime.of(2026, 2, 19, 15, 45);
         String usuarioId = "user1";
 
-        TareaCreadaEvent event = new TareaCreadaEvent(uuid, asunto, fecha, usuarioId);
+        TareaCompletadaEvent event = new TareaCompletadaEvent(uuid, asunto, fechaResolucion, usuarioId);
 
         assertEquals(uuid, event.uuid());
         assertEquals(asunto, event.asunto());
-        assertEquals(fecha, event.fecha());
+        assertEquals(fechaResolucion, event.fechaResolucion());
         assertEquals(usuarioId, event.usuarioId());
     }
 
     @Test
     void debeSerInmutable() {
-        TareaCreadaEvent event = new TareaCreadaEvent("uuid", "asunto", LocalDateTime.now(), "user");
+        TareaCompletadaEvent event = new TareaCompletadaEvent("uuid", "asunto", LocalDateTime.now(), "user");
         
         assertDoesNotThrow(() -> event.uuid());
         assertDoesNotThrow(() -> event.asunto());
-        assertDoesNotThrow(() -> event.fecha());
+        assertDoesNotThrow(() -> event.fechaResolucion());
         assertDoesNotThrow(() -> event.usuarioId());
     }
 }

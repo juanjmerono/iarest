@@ -2,10 +2,10 @@ package es.um.example.demo.domain.model;
 
 import java.time.LocalDateTime;
 
-public record TareaCreadaEvent(
+public record TareaCompletadaEvent(
         String uuid,
         String asunto,
-        LocalDateTime fecha,
+        LocalDateTime fechaResolucion,
         String usuarioId
 ) {
 }

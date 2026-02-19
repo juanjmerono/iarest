@@ -5,6 +5,7 @@ import es.um.example.demo.domain.port.TareaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class TareaRepositoryAdapter implements TareaRepository {
@@ -29,6 +30,12 @@ public class TareaRepositoryAdapter implements TareaRepository {
     }
 
     @Override
+    public Optional<Tarea> findByUuid(String uuid) {
+        return jpaRepository.findByUuid(uuid)
+                .map(this::toDomain);
+    }
+
+    @Override
     public Tarea save(Tarea tarea) {
         TareaEntity entity = toEntity(tarea);
         TareaEntity savedEntity = jpaRepository.save(entity);
@@ -43,6 +50,7 @@ public class TareaRepositoryAdapter implements TareaRepository {
             entity.setFecha(domain.getFecha());
             entity.setEstado(domain.getEstado());
             entity.setUsuarioId(domain.getUsuarioId());
+            entity.setFechaResolucion(domain.getFechaResolucion());
             return entity;
         }
         return new TareaEntity(
@@ -55,12 +63,14 @@ public class TareaRepositoryAdapter implements TareaRepository {
     }
 
     private Tarea toDomain(TareaEntity entity) {
-        return new Tarea(
+        Tarea tarea = new Tarea(
                 entity.getUuid(),
                 entity.getAsunto(),
                 entity.getFecha(),
                 entity.getEstado(),
                 entity.getUsuarioId()
         );
+        tarea.setFechaResolucion(entity.getFechaResolucion());
+        return tarea;
     }
 }
