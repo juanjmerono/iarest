@@ -98,7 +98,7 @@
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
 			<version>2.7.4</version>
-			<scope>test</scope>
+			<!--scope>test</scope-->
 		</dependency>
 
         <dependency>
