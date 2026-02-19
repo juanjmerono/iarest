@@ -37,19 +37,21 @@ public class CrearTareaCommandHandler {
                 savedTarea.getAsunto(),
                 savedTarea.getFecha(),
                 savedTarea.getEstado().name(),
-                savedTarea.getUsuarioId()
+                savedTarea.getUsuarioId(),
+                savedTarea.getFechaResolucion()
         );
     }
 
     public record CrearTareaCommandResult(
             String uuid,
             String asunto,
-            java.time.LocalDate fecha,
+            java.time.LocalDateTime fecha,
             String estado,
-            String usuarioId
+            String usuarioId,
+            java.time.LocalDateTime fechaResolucion
     ) {
         public TodoResponse toTodoResponse() {
-            return new TodoResponse(uuid, asunto, fecha, estado, usuarioId);
+            return new TodoResponse(uuid, asunto, fecha, estado, usuarioId, fechaResolucion);
         }
     }
 }

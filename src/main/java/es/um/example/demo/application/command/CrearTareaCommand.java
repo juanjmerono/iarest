@@ -4,13 +4,13 @@ import es.um.example.demo.application.dto.CrearTareaRequest;
 import es.um.example.demo.domain.model.EstadoTarea;
 import es.um.example.demo.domain.model.Tarea;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record CrearTareaCommand(
         String uuid,
         String asunto,
-        LocalDate fecha,
+        LocalDateTime fecha,
         EstadoTarea estado,
         String usuarioId
 ) {
@@ -18,7 +18,7 @@ public record CrearTareaCommand(
         return new CrearTareaCommand(
                 UUID.randomUUID().toString(),
                 request.getAsunto(),
-                LocalDate.now(),
+                LocalDateTime.now(),
                 EstadoTarea.pendiente,
                 usuarioId
         );

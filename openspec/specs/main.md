@@ -11,6 +11,9 @@ API REST para gestionar una lista de tareas (TODO list) con seguridad OAuth2/OID
 - `task-uuid-id`: Identificador único UUID para tareas
 - `task-ownership`: Propiedad de tareas por usuario
 - `task-created-event`: Evento de dominio cuando se crea una tarea
+- `complete-task`: Endpoint para completar tareas
+- `task-timestamps`: Timestamps para creación y resolución
+- `task-completed-event`: Evento de dominio al completar tarea
 
 ---
 
@@ -163,6 +166,123 @@ La publicación del evento DEBE ser transparente para el cliente que creó la ta
 
 ---
 
+### Capability: complete-task
+
+#### Requirement: Completar tarea
+El sistema DEBE permitir a usuarios autenticados con scope 'write' completar una tarea, cambiando su estado a COMPLETADA.
+
+##### Scenario: Completar tarea exitosamente
+- **WHEN** usuario autenticado con permiso 'write' envía PATCH a `/example/demo/todos/{uuid}/completar`
+- **AND** la tarea existe y pertenece al usuario
+- **THEN** el sistema retorna código HTTP 200 OK
+- **AND** la respuesta contiene la tarea con estado 'COMPLETADA'
+- **AND** la tarea tiene fechaResolucion establecida
+
+##### Scenario: Completar tarea sin autenticación
+- **WHEN** usuario envía PATCH a `/example/demo/todos/{uuid}/completar` sin token
+- **THEN** el sistema retorna código HTTP 401 Unauthorized
+
+##### Scenario: Completar tarea sin permiso write
+- **WHEN** usuario autenticado con solo scope 'read' envía PATCH a `/example/demo/todos/{uuid}/completar`
+- **THEN** el sistema retorna código HTTP 403 Forbidden
+
+##### Scenario: Completar tarea que no existe
+- **WHEN** usuario autenticado con permiso 'write' envía PATCH a `/example/demo/todos/inexistente/completar`
+- **THEN** el sistema retorna código HTTP 404 Not Found
+
+##### Scenario: Completar tarea de otro usuario
+- **WHEN** usuario "user1" envía PATCH a `/example/demo/todos/{uuid}/completar` donde la tarea pertenece a "user2"
+- **THEN** el sistema retorna código HTTP 404 Not Found
+
+##### Scenario: Completar tarea ya completada (idempotente)
+- **WHEN** usuario autenticado con permiso 'write' envía PATCH a `/example/demo/todos/{uuid}/completar` donde la tarea ya está COMPLETADA
+- **THEN** el sistema retorna código HTTP 200 OK
+- **AND** la respuesta contiene la tarea con estado 'COMPLETADA'
+- **AND** la fechaResolucion no se modifica
+
+---
+
+### Capability: task-timestamps
+
+#### Requirement: Almacenar fecha y hora de creación
+El sistema DEBE almacenar la fecha y hora exactas (timestamp) cuando se crea una tarea.
+
+##### Scenario: Tarea creada con timestamp de creación
+- **WHEN** usuario autenticado con permiso 'write' crea una tarea exitosamente
+- **THEN** la tarea tiene campo fechaCreacion con fecha y hora actual del sistema
+
+##### Scenario: Timestamp de creación en formato ISO 8601
+- **WHEN** se crea una tarea
+- **THEN** el campo fechaCreacion está en formato ISO 8601 con fecha y hora (ejemplo: "2026-02-19T14:30:00")
+
+#### Requirement: Almacenar fecha y hora de resolución
+El sistema DEBE almacenar la fecha y hora exactas (timestamp) cuando se completa una tarea.
+
+##### Scenario: Tarea completada con timestamp de resolución
+- **WHEN** usuario autenticado completa una tarea exitosamente
+- **THEN** la tarea tiene campo fechaResolucion con fecha y hora actual del sistema
+
+##### Scenario: Timestamp de resolución en formato ISO 8601
+- **WHEN** se completa una tarea
+- **THEN** el campo fechaResolucion está en formato ISO 8601 con fecha y hora (ejemplo: "2026-02-19T15:45:00")
+
+#### Requirement: Timestamp de resolución no se modifica
+El sistema DEBE mantener la fecha y hora de resolución original si la tarea ya estaba completada.
+
+##### Scenario: Completar tarea ya completada no modifica timestamp
+- **WHEN** se intenta completar una tarea que ya tiene fechaResolucion
+- **THEN** el campo fechaResolucion mantiene su valor original
+- **AND** no se actualiza a la fecha/hora actual
+
+#### Requirement: Respuesta API incluye timestamps
+El sistema DEBE incluir los campos fechaCreacion y fechaResolucion en las respuestas de la API.
+
+##### Scenario: GET tareas incluye timestamps
+- **WHEN** usuario autenticado obtiene la lista de tareas
+- **THEN** cada tarea contiene los campos fechaCreacion y fechaResolucion
+- **AND** si la tarea no está completada, fechaResolucion puede ser null
+
+##### Scenario: POST crear tarea incluye fechaCreacion en respuesta
+- **WHEN** usuario autenticado crea una tarea exitosamente
+- **THEN** la respuesta contiene el campo fechaCreacion con la fecha y hora de creación
+
+---
+
+### Capability: task-completed-event
+
+#### Requirement: Publicar evento al completar tarea
+El sistema DEBE publicar un evento de dominio `TareaCompletadaEvent` cuando se completa una tarea exitosamente.
+
+##### Scenario: Evento publicado tras completar tarea
+- **WHEN** un usuario autenticado con permiso 'write' completa una tarea exitosamente mediante PATCH a `/example/demo/todos/{uuid}/completar`
+- **AND** la tarea se persiste correctamente
+- **THEN** el sistema publica un evento `TareaCompletadaEvent` con los datos de la tarea
+
+#### Requirement: Contenido del evento TareaCompletadaEvent
+El evento `TareaCompletadaEvent` DEBE contener la siguiente información:
+- uuid: Identificador único de la tarea
+- asunto: Descripción de la tarea
+- fechaResolucion: Fecha y hora de resolución en formato ISO 8601
+- usuarioId: ID del usuario que completó la tarea
+
+##### Scenario: Evento contiene datos correctos
+- **WHEN** se publica el evento `TareaCompletadaEvent`
+- **THEN** el evento contiene los campos: uuid, asunto, fechaResolucion, usuarioId
+- **AND** el campo uuid corresponde al UUID de la tarea
+- **AND** el campo asunto contiene el valor de la tarea
+- **AND** el campo fechaResolucion contiene la fecha y hora actual del sistema
+- **AND** el campo usuarioId contiene el subject del JWT del usuario
+
+#### Requirement: Evento no se publica si la tarea ya está completada
+El sistema NO DEBE publicar un nuevo evento si la tarea ya estaba completada (operación idempotente).
+
+##### Scenario: No publicar evento al completar tarea ya completada
+- **WHEN** usuario autenticado intenta completar una tarea que ya está COMPLETADA
+- **THEN** NO se publica ningún evento `TareaCompletadaEvent`
+- **AND** el sistema retorna código HTTP 200 OK
+
+---
+
 ## MODIFIED Requirements
 
 ### Requirement: Obtener lista de tareas (de capability: todo-list-api)
@@ -188,13 +308,14 @@ El sistema DEBE permitir a usuarios autenticados con scope 'write' crear nuevas 
 
 ### Tarea
 
-| Campo    | Tipo     | Descripción                    |
-|----------|----------|--------------------------------|
-| id       | UUID     | Identificador único            |
-| asunto   | String   | Descripción de la tarea        |
-| fecha    | Date     | Fecha de creación (ISO 8601)  |
-| estado   | Enum     | PENDIENTE, EN_PROGRESO, COMPLETADA |
-| usuarioId | String  | ID del usuario propietario     |
+| Campo          | Tipo        | Descripción                          |
+|----------------|-------------|--------------------------------------|
+| id             | UUID        | Identificador único                  |
+| asunto         | String      | Descripción de la tarea              |
+| fechaCreacion  | LocalDateTime | Fecha y hora de creación (ISO 8601) |
+| fechaResolucion| LocalDateTime | Fecha y hora de resolución (ISO 8601, nullable) |
+| estado         | Enum        | PENDIENTE, EN_PROGRESO, COMPLETADA  |
+| usuarioId      | String      | ID del usuario propietario           |
 
 ## Seguridad
 
@@ -209,6 +330,7 @@ El sistema DEBE permitir a usuarios autenticados con scope 'write' crear nuevas 
 
 | Fecha       | Cambio                    |
 |-------------|---------------------------|
+| 2026-02-19  | Añadir endpoint completar tarea, timestamps y evento TareaCompletadaEvent |
 | 2026-02-19  | Añadir evento de dominio TareaCreadaEvent |
 | 2026-02-18  | Añadir endpoint GET todos |
 | 2026-02-18  | Añadir endpoint POST crear tarea |

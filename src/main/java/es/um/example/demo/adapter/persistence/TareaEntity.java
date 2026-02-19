@@ -2,7 +2,7 @@ package es.um.example.demo.adapter.persistence;
 
 import es.um.example.demo.domain.model.EstadoTarea;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "TAREA")
@@ -16,7 +16,7 @@ public class TareaEntity {
     private String asunto;
 
     @Column(name = "FECHA", nullable = false)
-    private LocalDate fecha;
+    private LocalDateTime fecha;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ESTADO", nullable = false)
@@ -25,10 +25,13 @@ public class TareaEntity {
     @Column(name = "USUARIO_ID", nullable = false)
     private String usuarioId;
 
+    @Column(name = "FECHA_RESOLUCION")
+    private LocalDateTime fechaResolucion;
+
     public TareaEntity() {
     }
 
-    public TareaEntity(String uuid, String asunto, LocalDate fecha, EstadoTarea estado, String usuarioId) {
+    public TareaEntity(String uuid, String asunto, LocalDateTime fecha, EstadoTarea estado, String usuarioId) {
         this.uuid = uuid;
         this.asunto = asunto;
         this.fecha = fecha;
@@ -52,11 +55,11 @@ public class TareaEntity {
         this.asunto = asunto;
     }
 
-    public LocalDate getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
 
-    public void setFecha(LocalDate fecha) {
+    public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
     }
 
@@ -74,5 +77,13 @@ public class TareaEntity {
 
     public void setUsuarioId(String usuarioId) {
         this.usuarioId = usuarioId;
+    }
+
+    public LocalDateTime getFechaResolucion() {
+        return fechaResolucion;
+    }
+
+    public void setFechaResolucion(LocalDateTime fechaResolucion) {
+        this.fechaResolucion = fechaResolucion;
     }
 }

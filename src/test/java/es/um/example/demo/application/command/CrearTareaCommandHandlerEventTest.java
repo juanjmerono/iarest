@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +42,7 @@ class CrearTareaCommandHandlerEventTest {
         when(tareaRepository.save(any())).thenAnswer(invocation -> {
             var tarea = invocation.getArgument(0, es.um.example.demo.domain.model.Tarea.class);
             tarea.setUuid(uuid);
-            tarea.setFecha(LocalDate.now());
+            tarea.setFecha(LocalDateTime.now());
             return tarea;
         });
 
@@ -56,7 +56,7 @@ class CrearTareaCommandHandlerEventTest {
         String usuarioId = "user1";
         String uuid = "test-uuid-123";
         String asunto = "Tarea de prueba";
-        LocalDate fecha = LocalDate.of(2026, 2, 19);
+        LocalDateTime fecha = LocalDateTime.of(2026, 2, 19, 10, 30);
         CrearTareaRequest request = new CrearTareaRequest(asunto);
 
         when(tareaRepository.save(any())).thenAnswer(invocation -> {

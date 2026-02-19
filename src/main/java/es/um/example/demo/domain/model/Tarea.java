@@ -1,19 +1,20 @@
 package es.um.example.demo.domain.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Tarea {
 
     private String uuid;
     private String asunto;
-    private LocalDate fecha;
+    private LocalDateTime fecha;
     private EstadoTarea estado;
     private String usuarioId;
+    private LocalDateTime fechaResolucion;
 
     public Tarea() {
     }
 
-    public Tarea(String uuid, String asunto, LocalDate fecha, EstadoTarea estado, String usuarioId) {
+    public Tarea(String uuid, String asunto, LocalDateTime fecha, EstadoTarea estado, String usuarioId) {
         this.uuid = uuid;
         this.asunto = asunto;
         this.fecha = fecha;
@@ -37,11 +38,11 @@ public class Tarea {
         this.asunto = asunto;
     }
 
-    public LocalDate getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
 
-    public void setFecha(LocalDate fecha) {
+    public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
     }
 
@@ -59,5 +60,13 @@ public class Tarea {
 
     public void setUsuarioId(String usuarioId) {
         this.usuarioId = usuarioId;
+    }
+
+    public LocalDateTime getFechaResolucion() {
+        return fechaResolucion;
+    }
+
+    public void setFechaResolucion(LocalDateTime fechaResolucion) {
+        this.fechaResolucion = fechaResolucion;
     }
 }

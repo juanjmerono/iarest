@@ -22,7 +22,8 @@ public class ObtenerTareasQueryHandler {
                         tarea.getAsunto(),
                         tarea.getFecha(),
                         tarea.getEstado().name(),
-                        tarea.getUsuarioId()))
+                        tarea.getUsuarioId(),
+                        tarea.getFechaResolucion()))
                 .toList();
         return new ObtenerTareasQuery.ObtenerTareasQueryResult(tareas);
     }
