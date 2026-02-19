@@ -6,7 +6,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultHandler;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
+
+import es.um.example.demo.application.dto.TodoResponse;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 
 @Component
 public class StepHelper {
@@ -15,6 +23,9 @@ public class StepHelper {
     private RequestPostProcessor jwt;
     private String currentUser;
     private String createdTaskUuid;
+
+    @Autowired
+    JsonMapper jsonMapper;
 
     private RequestPostProcessor getJWT(String user, String scope) {
         if (user == null || user.isEmpty()) return anonPostProcessor();
@@ -46,6 +57,16 @@ public class StepHelper {
     }
 
     protected ResultHandler readResponse = result -> this.mvcResult = result;
+
+    protected ResultHandler readResponseUuid = result -> {
+        this.mvcResult = result;
+        if (result != null) {
+            String responseBody = result.getResponse().getContentAsString();
+            if (responseBody != null && !responseBody.isEmpty()) {
+                this.createdTaskUuid = jsonMapper.readValue(responseBody, new TypeReference<EntityModel<TodoResponse>>() {}).getContent().getUuid();
+            }
+        }
+    };
 
     protected MvcResult getResponse() {
         return this.mvcResult;

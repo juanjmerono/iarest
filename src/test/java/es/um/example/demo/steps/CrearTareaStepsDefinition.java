@@ -44,7 +44,6 @@ public class CrearTareaStepsDefinition {
                         .with(stepHelper.getUserToken())
                         .content(jsonBody))
                .andDo(stepHelper.readResponse)
-               .andDo(MockMvcResultHandlers.print())
                .andReturn();
 
         int status = stepHelper.getStatusCode();
@@ -65,29 +64,32 @@ public class CrearTareaStepsDefinition {
     public void la_tarea_contiene_el_asunto(String asunto) throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.contains("\"asunto\":\"" + asunto + "\""));
+        EntityModel<TodoResponse> em = jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+        assertEquals(asunto, em.getContent().getAsunto());
     }
 
     @Y("la tarea tiene estado {string}")
     public void la_tarea_tiene_estado(String estado) throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.contains("\"estado\":\"" + estado + "\""));
+        EntityModel<TodoResponse> em = jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+        assertEquals(estado, em.getContent().getEstado());
     }
 
     @Y("la tarea tiene fecha actual")
     public void la_tarea_tiene_fecha_actual() throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.contains("\"fecha\""));
+        EntityModel<TodoResponse> em = jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+        assertTrue(em.getContent().getFecha().toLocalDate().isEqual(java.time.LocalDate.now()));
     }
 
     @Y("la tarea tiene un uuid válido")
     public void la_tarea_tiene_un_uuid_válido() throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.contains("\"uuid\""));
-        assertTrue(body.matches(".*\"uuid\"\\s*:\\s*\"[0-9a-f-]{36}\".*"));
+        EntityModel<TodoResponse> em = jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+        assertTrue(em.getContent().getUuid().matches("[0-9a-f-]{36}"));
     }
 
     @Y("la tarea tiene el usuarioId del usuario autenticado")
@@ -96,7 +98,8 @@ public class CrearTareaStepsDefinition {
         String expectedUser = stepHelper.getCurrentUser();
         assertNotNull(body);
         assertNotNull(expectedUser);
-        assertTrue(body.contains("\"usuarioId\":\"" + expectedUser + "\""));
+        EntityModel<TodoResponse> em = jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+        assertEquals(expectedUser, em.getContent().getUsuarioId());
     }
 
     @Entonces("obtiene una respuesta de error de validación")

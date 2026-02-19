@@ -10,14 +10,12 @@ import tools.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import es.um.example.demo.application.dto.TodoResponse;
 
@@ -45,16 +43,8 @@ public class CompletarTareaStepsDefinition {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .with(stepHelper.getUserToken())
                         .content(jsonBody))
-               .andDo(stepHelper.readResponse)
-               .andDo(MockMvcResultHandlers.print())
-               .andReturn();
-        
-        int status = stepHelper.getStatusCode();
-        if (status == 201 || status == 200) {
-            EntityModel<TodoResponse> em = 
-                jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
-            stepHelper.createdTaskUUid(em.getContent().getUuid());
-        }
+               .andDo(stepHelper.readResponseUuid)
+               .andReturn();        
     }
 
     @Dado("una tarea existente completada con asunto {string}")
@@ -64,16 +54,9 @@ public class CompletarTareaStepsDefinition {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .with(stepHelper.getUserToken())
                         .content(jsonBody))
-               .andDo(stepHelper.readResponse)
+               .andDo(stepHelper.readResponseUuid)
                .andReturn();
         
-        int status = stepHelper.getStatusCode();
-        if (status == 201 || status == 200) {
-            EntityModel<TodoResponse> em = 
-                jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
-            stepHelper.createdTaskUUid(em.getContent().getUuid());
-        }
-
         mockMvc.perform(MockMvcRequestBuilders.patch(API_TODOS_PATH + "/" + stepHelper.getCreatedTaskUuid() + "/completar")
                         .with(stepHelper.getUserToken()))
                .andDo(stepHelper.readResponse);
@@ -89,16 +72,9 @@ public class CompletarTareaStepsDefinition {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .with(stepHelper.getUserToken())
                         .content(jsonBody))
-               .andDo(stepHelper.readResponse)
+               .andDo(stepHelper.readResponseUuid)
                .andReturn();
         
-        int status = stepHelper.getStatusCode();
-        if (status == 201 || status == 200) {
-            EntityModel<TodoResponse> em = 
-                jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
-            stepHelper.createdTaskUUid(em.getContent().getUuid());
-        }
-
         stepHelper.enableUserToken(originalUser, "write");
     }
 
@@ -125,8 +101,8 @@ public class CompletarTareaStepsDefinition {
     public void la_tarea_tiene_fechaResolucion_establecida() throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.contains("\"fechaResolucion\":"), "Expected fechaResolucion field but got: " + body);
-        assertFalse(body.matches(".*\"fechaResolucion\"\\s*:\\s*null.*"), "Expected fechaResolucion to not be null but got: " + body);
+        EntityModel<TodoResponse> em = jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+        assertNotNull(em.getContent().getFechaResolucion());
     }
 
     @Entonces("obtiene una respuesta de tarea no encontrada")
@@ -138,6 +114,7 @@ public class CompletarTareaStepsDefinition {
     public void la_fechaResolucion_no_se_modifica() throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.contains("\"fechaResolucion\":"), "Expected fechaResolucion field but got: " + body);
+        EntityModel<TodoResponse> em = jsonMapper.readValue(stepHelper.getResponseBody(),new TypeReference<EntityModel<TodoResponse>>() {});
+        assertNotNull(em.getContent().getFechaResolucion());
     }
 }

@@ -11,22 +11,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class TaskMetricsEventListener {
 
-    private final Counter tasksCreatedCounter;
-    private final Counter tasksCompletedCounter;
+    private Counter tasksCreatedCounter;
+    private Counter tasksCompletedCounter;
+    private MeterRegistry registry;
 
     public TaskMetricsEventListener(MeterRegistry registry) {
-        this.tasksCreatedCounter = Counter.builder("tasks_created_total")
-                .description("Total number of tasks created")
-                .register(registry);
-
-        this.tasksCompletedCounter = Counter.builder("tasks_completed_total")
-                .description("Total number of tasks completed")
-                .register(registry);
-
-        // Gauge for completion ratio
-        Gauge.builder("tasks_completion_ratio", this, TaskMetricsEventListener::calculateCompletionRatio)
-                .description("Ratio of completed tasks to created tasks (as percentage)")
-                .register(registry);
+        this.registry = registry;
+        registerMetrics();
     }
 
     @EventListener
@@ -41,9 +32,32 @@ public class TaskMetricsEventListener {
 
     private double calculateCompletionRatio() {
         double created = tasksCreatedCounter.count();
+        double completed = tasksCompletedCounter.count();
         if (created == 0) {
             return 0.0;
         }
-        return (tasksCompletedCounter.count() / created) * 100.0;
+        double gaugeValue = (completed / created) * 100.0;
+        return gaugeValue;
     }
+
+    private void registerMetrics() {
+        this.tasksCreatedCounter = Counter.builder("tasks_created_total")
+                .description("Total number of tasks created")
+                .register(registry);
+
+        this.tasksCompletedCounter = Counter.builder("tasks_completed_total")
+                .description("Total number of tasks completed")
+                .register(registry);
+
+        // Gauge for completion ratio
+        Gauge.builder("tasks_completion_ratio", this, TaskMetricsEventListener::calculateCompletionRatio)
+                .description("Ratio of completed tasks to created tasks (as percentage)")
+                .register(registry);
+    }
+
+    public void resetMetrics() {
+        registry.clear();
+        registerMetrics();
+    }
+
 }
