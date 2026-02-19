@@ -18,7 +18,8 @@ public class DemoApplication {
         	.authorizeHttpRequests(auth -> auth
             	.requestMatchers("/api-docs/**",
                 	"/swagger-ui.html",
-                	"/swagger-ui/**"
+                	"/swagger-ui/**",
+					"/actuator/**"
             	).permitAll()
             	.anyRequest().authenticated()
         	).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
