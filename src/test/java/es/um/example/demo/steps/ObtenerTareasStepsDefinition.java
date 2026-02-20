@@ -37,7 +37,6 @@ public class ObtenerTareasStepsDefinition {
     @Autowired
     JsonMapper jsonMapper;
 
-
     @Dado("un usuario anónimo")
     public void un_usuario_anónimo() {
         stepHelper.enableUserToken(null,null);
@@ -75,19 +74,24 @@ public class ObtenerTareasStepsDefinition {
     public void una_lista_de_tareas_no_vacia() throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.startsWith("{"));
-        assertFalse(body.equals("{}"));
+
+        CollectionModel<EntityModel<TodoResponse>> cm = 
+            jsonMapper.readValue(body, 
+                    new TypeReference<CollectionModel<EntityModel<TodoResponse>>>() {});
+
+        assertTrue(cm.getContent().size() > 0, "Expected non-empty list but got: " + body);
     }
 
     @Y("cada tarea contiene los campos: uuid, asunto, fecha, estado, usuarioId")
     public void cada_tarea_contiene_los_campos_uuid_asunto_fecha_estado_usuarioId() throws Exception {
         String body = stepHelper.getResponseBody();
         assertNotNull(body);
-        assertTrue(body.contains("\"uuid\""));
-        assertTrue(body.contains("\"asunto\""));
-        assertTrue(body.contains("\"fecha\""));
-        assertTrue(body.contains("\"estado\""));
-        assertTrue(body.contains("\"usuarioId\""));
+
+        CollectionModel<EntityModel<TodoResponse>> cm = 
+            jsonMapper.readValue(body, 
+                    new TypeReference<CollectionModel<EntityModel<TodoResponse>>>() {});
+
+        assertTrue(cm.getContent().stream().allMatch(c -> !c.getContent().getAsunto().isBlank()));
     }
 
     @Dado("el sistema tiene tareas de otros usuarios")

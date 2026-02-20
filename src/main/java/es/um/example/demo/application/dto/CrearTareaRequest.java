@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 @Schema(description = "Request para crear una nueva tarea")
 public class CrearTareaRequest {
 
-    @Schema(description = "Asunto o título de la tarea", example = "Terminar informe mensual", required = true)
+    @Schema(description = "Asunto o título de la tarea", example = "Terminar informe mensual", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "El asunto no puede estar vacío")
     private String asunto;
 
