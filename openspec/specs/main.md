@@ -14,10 +14,39 @@ API REST para gestionar una lista de tareas (TODO list) con seguridad OAuth2/OID
 - `complete-task`: Endpoint para completar tareas
 - `task-timestamps`: Timestamps para creación y resolución
 - `task-completed-event`: Evento de dominio al completar tarea
+- `prometheus-task-metrics`: Métricas Prometheus para tareas
+
+### Capability: prometheus-task-metrics
+
+#### Requisito: Métricas de Creación de Tareas
+El sistema DEBE incrementar una métrica de tipo counter de Prometheus llamada `tasks_created_total` cada vez que se publique un evento de dominio de creación de tarea.
+
+##### Escenario: Tarea creada exitosamente
+- **WHEN** se crea una tarea y se publica el evento de dominio TaskCreated
+- **THEN** el counter `tasks_created_total` DEBE incrementarse en 1
+
+#### Requisito: Métricas de Completado de Tareas
+El sistema DEBE incrementar una métrica de tipo counter de Prometheus llamada `tasks_completed_total` cada vez que se publique un evento de dominio de completado de tarea.
+
+##### Escenario: Tarea completada exitosamente
+- **WHEN** se marca una tarea como completada y se publica el evento de dominio TaskCompleted
+- **THEN** el counter `tasks_completed_total` DEBE incrementarse en 1
+
+#### Requisito: Métricas de Ratio de Completado
+El sistema DEBE exponer una métrica de tipo gauge de Prometheus llamada `tasks_completion_ratio` que calcule el porcentaje de tareas completadas respecto a las creadas.
+
+##### Escenario: Cálculo del ratio
+- **WHEN** se consulta el endpoint de métricas
+- **THEN** el gauge `tasks_completion_ratio` DEBE retornar (tasks_completed_total / tasks_created_total) * 100, o 0 si no hay tareas creadas
+
+#### Requisito: Exposición de Métricas
+El sistema DEBE exponer todas las métricas de tareas a través del endpoint Prometheus de Spring Boot Actuator en `/actuator/prometheus`.
+
+##### Escenario: Acceso al endpoint de métricas
+- **WHEN** un scraper de Prometheus consulta `/actuator/prometheus`
+- **THEN** la respuesta DEBE incluir las métricas relacionadas con tareas con el formato adecuado
 
 ---
-
-## ADDED Requirements
 
 ### Capability: todo-list-api
 
@@ -330,6 +359,7 @@ El sistema DEBE permitir a usuarios autenticados con scope 'write' crear nuevas 
 
 | Fecha       | Cambio                    |
 |-------------|---------------------------|
+| 2026-02-20  | Añadir métricas Prometheus para tareas |
 | 2026-02-19  | Añadir endpoint completar tarea, timestamps y evento TareaCompletadaEvent |
 | 2026-02-19  | Añadir evento de dominio TareaCreadaEvent |
 | 2026-02-18  | Añadir endpoint GET todos |
