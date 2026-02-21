@@ -1,0 +1,25 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Java 17, Spring Boot 4.0.2
+  Testing: JUnit 5, Cucumber 7.34.2
+  Coverage: JaCoCo
+  
+  Dominio: API REST para gestión de tareas (ToDo)
+  - Persistencia: Spring Data JPA con HSQLDB in-memory
+  - Seguridad: OAuth2 Resource Server con JWT
+  - API: REST con HATEOAS + OpenAPI/Swagger
+  - Métricas: Micrometer + Prometheus
+  
+  Convenciones:
+  - Arquitectura hexagonal/ports & adapters
+  - Patrón CQRS (Commands & Queries separados)
+  - Eventos de dominio (TareaCreadaEvent, TareaCompletadaEvent)
+  - Tests BDD con Cucumber
+
+rules:
+  proposal:
+    - Mantener propuestas concisas (máx 500 palabras)
+    - Incluir siempre sección de "Fuera de alcance" para aclarar límites del proyecto
+  tasks:
+    - Dividir tareas en bloques de máximo 2 horas
