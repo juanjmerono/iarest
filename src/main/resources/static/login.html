@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA Rest - API de Ejemplo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        .description {
+            color: #555;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .login-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8d7da;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IA Rest API</h1>
+        <p class="subtitle">API de Ejemplo con Spring Boot</p>
+        <p class="description">
+            Esta es una API REST protegida con OAuth2/OIDC. 
+            Inicia sesión con tu cuenta institucional para acceder a los recursos.
+        </p>
+        <button id="loginBtn" class="login-btn">Iniciar Sesión</button>
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        const config = {
+            issuer: 'https://apitest.um.es/mncs/api-umu/cas/oidc',
+            clientId: 'webservice',
+            redirectUri: window.location.origin + '/callback.html',
+            scope: 'openid profile email'
+        };
+
+        function generateRandomString(length) {
+            const array = new Uint8Array(length);
+            crypto.getRandomValues(array);
+            return btoa(String.fromCharCode(...array))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+        }
+
+        async function sha256(buffer) {
+            return await crypto.subtle.digest('SHA-256', buffer);
+        }
+
+        async function generateCodeChallenge(codeVerifier) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(codeVerifier);
+            const hash = await sha256(data);
+            return btoa(String.fromCharCode(...new Uint8Array(hash)))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+        }
+
+        async function initiateLogin() {
+            const btn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('error');
+            
+            btn.disabled = true;
+            btn.textContent = 'Redireccionando...';
+            errorDiv.style.display = 'none';
+
+            try {
+                const codeVerifier = generateRandomString(64);
+                const codeChallenge = await generateCodeChallenge(codeVerifier);
+                const state = generateRandomString(32);
+                const nonce = generateRandomString(32);
+
+                sessionStorage.setItem('oidc_code_verifier', codeVerifier);
+                sessionStorage.setItem('oidc_state', state);
+
+                const params = new URLSearchParams({
+                    response_type: 'code',
+                    client_id: config.clientId,
+                    redirect_uri: config.redirectUri,
+                    scope: config.scope,
+                    state: state,
+                    nonce: nonce,
+                    code_challenge: codeChallenge,
+                    code_challenge_method: 'S256'
+                });
+
+                const authUrl = config.issuer + '/authorize?' + params.toString();
+                window.location.href = authUrl;
+
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = 'Iniciar Sesión';
+                errorDiv.textContent = 'Error al iniciar sesión: ' + err.message;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', initiateLogin);
+
+        if (sessionStorage.getItem('oidc_access_token')) {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

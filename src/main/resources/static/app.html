@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Tareas - IA Rest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            color: white;
+            font-size: 2rem;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            display: flex;
+            gap: 1rem;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .add-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .todo-list {
+            list-style: none;
+        }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            gap: 1rem;
+        }
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+        .todo-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+        .todo-content {
+            flex: 1;
+        }
+        .todo-title {
+            font-size: 1.1rem;
+            color: #333;
+        }
+        .todo-title.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+        .todo-meta {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.25rem;
+        }
+        .todo-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .todo-status.PENDIENTE {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .todo-status.COMPLETADA {
+            background: #d4edda;
+            color: #155724;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mis Tareas</h1>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </header>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div class="card">
+            <form class="form-group" onsubmit="createTodo(event)">
+                <input type="text" id="newTodo" placeholder="Nueva tarea..." required>
+                <button type="submit" class="add-btn" id="addBtn">Agregar</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div id="loading" class="loading">Cargando tareas...</div>
+            <ul id="todoList" class="todo-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/example/demo';
+        
+        function getToken() {
+            return sessionStorage.getItem('oidc_access_token');
+        }
+
+        function checkAuth() {
+            const token = getToken();
+            if (!token) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        function logout() {
+            sessionStorage.removeItem('oidc_access_token');
+            sessionStorage.removeItem('oidc_id_token');
+            sessionStorage.removeItem('oidc_refresh_token');
+            sessionStorage.removeItem('oidc_token_type');
+            sessionStorage.removeItem('oidc_expires_at');
+            window.location.href = '/login.html';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        async function fetchApi(endpoint, options = {}) {
+            const token = getToken();
+            if (!token) {
+                logout();
+                return null;
+            }
+
+            const response = await fetch(API_BASE + endpoint, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token,
+                    ...options.headers
+                }
+            });
+
+            if (response.status === 401) {
+                logout();
+                return null;
+            }
+
+            return response;
+        }
+
+        async function loadTodos() {
+            if (!checkAuth()) return;
+
+            const loading = document.getElementById('loading');
+            const todoList = document.getElementById('todoList');
+            
+            try {
+                const response = await fetchApi('/todos');
+                
+                if (!response.ok) {
+                    throw new Error('Error al cargar tareas');
+                }
+
+                const data = await response.json();
+                const todos = data._embedded ? data._embedded.todoResponseList : [];
+                
+                loading.style.display = 'none';
+                
+                if (todos.length === 0) {
+                    todoList.innerHTML = '<li class="empty-state">No hay tareas. ¡Crea una nueva!</li>';
+                    return;
+                }
+
+                todoList.innerHTML = todos.map(todo => {
+                    const attrs = todo.content || todo;
+                    const uuid = attrs.uuid;
+                    const title = attrs.asunto;
+                    const status = attrs.estado;
+                    const fecha = new Date(attrs.fecha).toLocaleDateString('es-ES');
+                    const completed = status === 'completada';
+                    
+                    return `
+                        <li class="todo-item">
+                            <input 
+                                type="checkbox" 
+                                class="todo-checkbox" 
+                                ${completed ? 'disabled' : ''}
+                                ${completed ? 'checked' : ''}
+                                onchange="toggleTodo('${uuid}', ${!completed})"
+                            >
+                            <div class="todo-content">
+                                <div class="todo-title ${completed ? 'completed' : ''}">${escapeHtml(title)}</div>
+                                <div class="todo-meta">Creada: ${fecha}</div>
+                            </div>
+                            <span class="todo-status ${status}">${status}</span>
+                        </li>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                loading.textContent = 'Error al cargar tareas: ' + err.message;
+                showError(err.message);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function createTodo(event) {
+            event.preventDefault();
+            
+            const input = document.getElementById('newTodo');
+            const btn = document.getElementById('addBtn');
+            const title = input.value.trim();
+            
+            if (!title) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Agregando...';
+
+            try {
+                const response = await fetchApi('/todos', {
+                    method: 'POST',
+                    body: JSON.stringify({ asunto: title })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Error al crear tarea');
+                }
+
+                input.value = '';
+                await loadTodos();
+
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Agregar';
+            }
+        }
+
+        async function toggleTodo(uuid, complete) {
+            if (!complete) return;
+
+            try {
+                const response = await fetchApi(`/todos/${uuid}/completar`, {
+                    method: 'PATCH'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al completar tarea');
+                }
+
+                await loadTodos();
+
+            } catch (err) {
+                showError(err.message);
+                await loadTodos();
+            }
+        }
+
+        loadTodos();
+    </script>
+</body>
+</html>
